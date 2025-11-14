@@ -1,27 +1,48 @@
-# 视频播放器 - 支持PIP画中画功能
+# 视频播放器 - Liquid Glass 设计语言
 
-这是一个使用SwiftUI开发的iOS视频播放器应用，完整支持Apple的Picture in Picture（画中画）功能。
+这是一个使用SwiftUI开发的iOS视频播放器应用，采用现代化的**Liquid Glass设计语言**，完整支持Apple的Picture in Picture（画中画）功能。
 
-## 主要功能
+## 🎨 设计特色
 
-### ✨ 核心特性
+### Liquid Glass 设计语言
+
+本应用采用前沿的Liquid Glass（流动玻璃）设计风格，带来极致的视觉体验：
+
+- **毛玻璃效果 (Frosted Glass)** - 使用 `.ultraThinMaterial` 创建半透明磨砂质感
+- **动态渐变背景** - 流动的色彩渐变，增强视觉深度
+- **玻璃态组件** - 所有UI元素采用透明叠加和模糊效果
+- **光影效果** - 柔和的阴影和高光边框营造立体感
+- **流畅动画** - 平滑的过渡效果和交互反馈
+- **深色优化** - 专为深色模式设计的配色方案
+
+### 视觉元素
+
+- 渐变色彩：紫蓝色调营造科技感
+- 圆角设计：柔和的边角增强亲和力
+- 半透明层：多层次的视觉深度
+- 发光效果：按钮和图标的光晕增强质感
+
+## ✨ 核心功能
 
 1. **视频播放**
    - 支持HTTP/HTTPS视频流
    - 支持本地和远程视频文件
    - 流畅的播放控制界面
+   - 自动隐藏控制栏
 
 2. **画中画(PIP)模式**
    - 一键切换PIP模式
    - 支持在使用其他应用时继续播放
    - 自动暂停和恢复
    - 完整的PIP生命周期管理
+   - PIP状态视觉反馈
 
-3. **播放控制**
+3. **智能控制**
    - 播放/暂停
    - 快进15秒
    - 快退15秒
-   - 进度跟踪
+   - 点击屏幕显示/隐藏控制栏
+   - 3秒后自动隐藏控制栏
 
 ## 技术实现
 
@@ -30,17 +51,41 @@
 #### 1. VideoPlayerApp.swift
 应用程序入口点，使用SwiftUI的`@main`属性标记。
 
-#### 2. ContentView.swift
-主视图界面，包含：
-- 视频URL输入框
-- 示例视频列表
-- 播放控制入口
+#### 2. LiquidGlassComponents.swift ⭐ 新增
+完整的Liquid Glass设计系统组件库：
 
-#### 3. VideoPlayerView.swift
-核心播放器视图，包含：
+- **LiquidGradientBackground** - 动态渐变背景（8秒循环动画）
+- **GlassCard** - 毛玻璃卡片容器
+- **GlassButton** - 玻璃态按钮（支持主要/次要样式）
+- **GlassTextField** - 玻璃态文本输入框
+- **GlassListItem** - 带按压反馈的列表项
+- **FloatingGlassButton** - 浮动圆形玻璃按钮
+- **GlassTitle/GlassSubtitle** - 渐变文字样式
+
+所有组件都包含：
+- `.ultraThinMaterial` 毛玻璃效果
+- 渐变边框高光
+- 多层阴影
+- 半透明背景
+- 流畅动画
+
+#### 3. ContentView.swift
+采用Liquid Glass风格的主视图界面：
+- 动态渐变背景
+- 玻璃态卡片布局
+- 视频URL输入区
+- 精选视频列表
+- 使用指南卡片
+- ScrollView支持长内容
+
+#### 4. VideoPlayerView.swift
+采用Liquid Glass风格的播放器：
 - **VideoPlayerManager**: 管理播放器状态和PIP控制
 - **AVPlayer集成**: 使用AVFoundation进行视频播放
 - **PIP控制器**: AVPictureInPictureController的完整实现
+- **智能控制栏**: 自动显示/隐藏（3秒定时器）
+- **玻璃态控制面板**: 顶部工具栏和底部播放控制
+- **流畅过渡动画**: 控制栏的滑入/滑出效果
 
 ### PIP实现细节
 
@@ -142,11 +187,35 @@ pipController.startPictureInPicture()
 
 ```
 player/
-├── VideoPlayerApp.swift        # 应用入口
-├── ContentView.swift           # 主视图
-├── VideoPlayerView.swift       # 播放器视图和PIP实现
-├── Info.plist                  # 应用配置
-└── README.md                   # 说明文档
+├── VideoPlayerApp.swift           # 应用入口
+├── LiquidGlassComponents.swift    # ⭐ Liquid Glass设计组件库
+├── ContentView.swift              # 主视图（Liquid Glass风格）
+├── VideoPlayerView.swift          # 播放器视图（Liquid Glass风格）+ PIP实现
+├── Info.plist                     # 应用配置
+└── README.md                      # 说明文档
+```
+
+### 设计系统架构
+
+```
+LiquidGlassComponents.swift
+├── 颜色系统
+│   ├── liquidPrimary (蓝色)
+│   ├── liquidSecondary (紫色)
+│   ├── liquidAccent (青色)
+│   └── 半透明变体
+├── 背景组件
+│   └── LiquidGradientBackground (动态渐变)
+├── 容器组件
+│   └── GlassCard (毛玻璃卡片)
+├── 交互组件
+│   ├── GlassButton (玻璃按钮)
+│   ├── GlassTextField (玻璃输入框)
+│   ├── GlassListItem (玻璃列表项)
+│   └── FloatingGlassButton (浮动按钮)
+└── 文字组件
+    ├── GlassTitle (大标题)
+    └── GlassSubtitle (副标题)
 ```
 
 ## 常见问题

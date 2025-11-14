@@ -13,85 +13,218 @@ struct VideoPlayerView: View {
     let videoURL: URL
     @Environment(\.dismiss) var dismiss
     @StateObject private var playerManager = VideoPlayerManager()
+    @State private var showControls = true
+    @State private var controlsTimer: Timer?
 
     var body: some View {
         ZStack {
+            // 黑色背景
             Color.black.edgesIgnoringSafeArea(.all)
 
-            VStack {
-                // 顶部工具栏
-                HStack {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "xmark")
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.black.opacity(0.5))
-                            .clipShape(Circle())
-                    }
+            // 视频播放器
+            VideoPlayerContainerView(
+                videoURL: videoURL,
+                playerManager: playerManager
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .onTapGesture {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showControls.toggle()
+                }
+                resetControlsTimer()
+            }
 
-                    Spacer()
+            // 控制层
+            if showControls {
+                VStack {
+                    // 顶部工具栏 - Liquid Glass风格
+                    HStack {
+                        FloatingGlassButton(
+                            icon: "xmark",
+                            isActive: false
+                        ) {
+                            dismiss()
+                        }
 
-                    Text("视频播放器")
+                        Spacer()
+
+                        // 标题卡片
+                        HStack(spacing: 8) {
+                            Image(systemName: "play.circle.fill")
+                                .font(.system(size: 16))
+                            Text("正在播放")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
                         .foregroundColor(.white)
-                        .font(.headline)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            Capsule()
+                                .fill(Color.white.opacity(0.15))
+                                .background(
+                                    Capsule()
+                                        .fill(.ultraThinMaterial)
+                                )
+                        )
+                        .overlay(
+                            Capsule()
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [
+                                            Color.white.opacity(0.3),
+                                            Color.white.opacity(0.1)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
+                        .shadow(color: Color.black.opacity(0.3), radius: 15, x: 0, y: 5)
+
+                        Spacer()
+
+                        FloatingGlassButton(
+                            icon: playerManager.isPiPActive ? "pip.fill" : "pip",
+                            isActive: playerManager.isPiPActive
+                        ) {
+                            playerManager.togglePictureInPicture()
+                        }
+                    }
+                    .padding()
+                    .transition(.move(edge: .top).combined(with: .opacity))
 
                     Spacer()
 
-                    Button(action: {
-                        playerManager.togglePictureInPicture()
-                    }) {
-                        Image(systemName: playerManager.isPiPActive ? "pip.fill" : "pip")
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.black.opacity(0.5))
-                            .clipShape(Circle())
+                    // 底部控制栏 - Liquid Glass风格
+                    VStack(spacing: 20) {
+                        // 播放控制按钮
+                        HStack(spacing: 40) {
+                            // 快退按钮
+                            ControlButton(
+                                icon: "gobackward.15",
+                                size: 50,
+                                action: {
+                                    playerManager.seekBackward()
+                                    resetControlsTimer()
+                                }
+                            )
+
+                            // 播放/暂停按钮
+                            Button(action: {
+                                playerManager.togglePlayPause()
+                                resetControlsTimer()
+                            }) {
+                                Image(systemName: playerManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                                    .font(.system(size: 70))
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [.white, Color.white.opacity(0.8)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .shadow(color: Color.liquidPrimary.opacity(0.5), radius: 20, x: 0, y: 10)
+                                    .shadow(color: Color.black.opacity(0.5), radius: 10, x: 0, y: 5)
+                            }
+
+                            // 快进按钮
+                            ControlButton(
+                                icon: "goforward.15",
+                                size: 50,
+                                action: {
+                                    playerManager.seekForward()
+                                    resetControlsTimer()
+                                }
+                            )
+                        }
+                        .padding(.vertical, 20)
+                        .padding(.horizontal, 40)
+                        .background(
+                            RoundedRectangle(cornerRadius: 30)
+                                .fill(Color.white.opacity(0.1))
+                                .background(
+                                    RoundedRectangle(cornerRadius: 30)
+                                        .fill(.ultraThinMaterial)
+                                )
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 30)
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [
+                                            Color.white.opacity(0.3),
+                                            Color.white.opacity(0.1)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1.5
+                                )
+                        )
+                        .shadow(color: Color.black.opacity(0.4), radius: 25, x: 0, y: 15)
                     }
+                    .padding(.bottom, 30)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
-                .padding()
-
-                // 视频播放器
-                VideoPlayerContainerView(
-                    videoURL: videoURL,
-                    playerManager: playerManager
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                // 底部控制栏
-                HStack(spacing: 20) {
-                    Button(action: {
-                        playerManager.seekBackward()
-                    }) {
-                        Image(systemName: "gobackward.15")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                    }
-
-                    Button(action: {
-                        playerManager.togglePlayPause()
-                    }) {
-                        Image(systemName: playerManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.largeTitle)
-                            .foregroundColor(.white)
-                    }
-
-                    Button(action: {
-                        playerManager.seekForward()
-                    }) {
-                        Image(systemName: "goforward.15")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                    }
-                }
-                .padding()
             }
         }
+        .preferredColorScheme(.dark)
         .onAppear {
             playerManager.setupPlayer(with: videoURL)
+            resetControlsTimer()
         }
         .onDisappear {
             playerManager.cleanup()
+            controlsTimer?.invalidate()
+        }
+    }
+
+    private func resetControlsTimer() {
+        controlsTimer?.invalidate()
+        controlsTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
+            withAnimation(.easeInOut(duration: 0.3)) {
+                showControls = false
+            }
+        }
+    }
+}
+
+// MARK: - 控制按钮组件
+struct ControlButton: View {
+    let icon: String
+    let size: CGFloat
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: size * 0.5, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: size, height: size)
+                .background(
+                    Circle()
+                        .fill(Color.white.opacity(0.15))
+                        .background(
+                            Circle()
+                                .fill(.ultraThinMaterial)
+                        )
+                )
+                .overlay(
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.3),
+                                    Color.white.opacity(0.1)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
         }
     }
 }
