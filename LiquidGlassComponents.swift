@@ -82,6 +82,66 @@ struct GlassCard<Content: View>: View {
 }
 
 // MARK: - 玻璃按钮
+struct GlassButtonLabel: View {
+    let title: String
+    let icon: String?
+    var isEnabled: Bool = true
+    var isPrimary: Bool = false
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if let icon = icon {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .semibold))
+            }
+            Text(title)
+                .font(.system(size: 16, weight: .semibold))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 20)
+        .background(
+            ZStack {
+                if isPrimary {
+                    LinearGradient(
+                        colors: [Color.liquidPrimary, Color.liquidSecondary],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .opacity(isEnabled ? 1 : 0.5)
+                } else {
+                    Color.white.opacity(isEnabled ? 0.15 : 0.05)
+                }
+
+                if isEnabled {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(.ultraThinMaterial)
+                }
+            }
+        )
+        .foregroundColor(isEnabled ? .white : .gray)
+        .cornerRadius(16)
+        .shadow(color: isPrimary ? Color.liquidPrimary.opacity(0.5) : Color.black.opacity(0.2),
+                radius: isPrimary ? 15 : 10,
+                x: 0,
+                y: isPrimary ? 8 : 5)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.4),
+                            Color.white.opacity(0.1)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+    }
+}
+
 struct GlassButton: View {
     let title: String
     let icon: String?
@@ -91,55 +151,11 @@ struct GlassButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
-                if let icon = icon {
-                    Image(systemName: icon)
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                Text(title)
-                    .font(.system(size: 16, weight: .semibold))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .padding(.horizontal, 20)
-            .background(
-                ZStack {
-                    if isPrimary {
-                        LinearGradient(
-                            colors: [Color.liquidPrimary, Color.liquidSecondary],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                        .opacity(isEnabled ? 1 : 0.5)
-                    } else {
-                        Color.white.opacity(isEnabled ? 0.15 : 0.05)
-                    }
-
-                    if isEnabled {
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(.ultraThinMaterial)
-                    }
-                }
-            )
-            .foregroundColor(isEnabled ? .white : .gray)
-            .cornerRadius(16)
-            .shadow(color: isPrimary ? Color.liquidPrimary.opacity(0.5) : Color.black.opacity(0.2),
-                    radius: isPrimary ? 15 : 10,
-                    x: 0,
-                    y: isPrimary ? 8 : 5)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.4),
-                                Color.white.opacity(0.1)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
+            GlassButtonLabel(
+                title: title,
+                icon: icon,
+                isEnabled: isEnabled,
+                isPrimary: isPrimary
             )
         }
         .disabled(!isEnabled)

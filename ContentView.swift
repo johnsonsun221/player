@@ -6,10 +6,17 @@
 //
 
 import SwiftUI
+import PhotosUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @State private var videoURL: String = ""
+    @State private var activeVideoURL: URL?
     @State private var showPlayer = false
+    @State private var selectedVideoItem: PhotosPickerItem?
+    @State private var isImportingVideo = false
+    @State private var importErrorMessage: String?
+    @State private var importedVideoDescription: String?
 
     // 示例视频URL
     let sampleVideos = [
@@ -61,13 +68,57 @@ struct ContentView: View {
                                 title: "开始播放",
                                 icon: "play.fill",
                                 action: {
-                                    if !videoURL.isEmpty {
+                                    let trimmedURL = videoURL.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    guard !trimmedURL.isEmpty else {
+                                        importErrorMessage = "请输入有效的视频链接。"
+                                        return
+                                    }
+
+                                    videoURL = trimmedURL
+
+                                    if let url = URL(string: trimmedURL) {
+                                        activeVideoURL = url
+                                        importErrorMessage = nil
+                                        importedVideoDescription = nil
                                         showPlayer = true
+                                    } else {
+                                        importErrorMessage = "请输入有效的视频链接。"
                                     }
                                 },
-                                isEnabled: !videoURL.isEmpty,
+                                isEnabled: !videoURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                                 isPrimary: true
                             )
+
+                            PhotosPicker(selection: $selectedVideoItem, matching: .videos) {
+                                ZStack {
+                                    GlassButtonLabel(
+                                        title: isImportingVideo ? "正在导入..." : "选择本地视频",
+                                        icon: isImportingVideo ? "hourglass" : "plus.circle",
+                                        isEnabled: !isImportingVideo,
+                                        isPrimary: false
+                                    )
+
+                                    if isImportingVideo {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    }
+                                }
+                            }
+                            .disabled(isImportingVideo)
+
+                            if let description = importedVideoDescription {
+                                Label(description, systemImage: "checkmark.circle")
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.green)
+                            }
+
+                            if let errorMessage = importErrorMessage {
+                                Label(errorMessage, systemImage: "exclamationmark.triangle")
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.red)
+                            }
                         }
                         .padding(20)
                     }
@@ -91,8 +142,15 @@ struct ContentView: View {
                                     icon: video.2,
                                     title: video.1
                                 ) {
-                                    videoURL = video.0
-                                    showPlayer = true
+                                    if let url = URL(string: video.0) {
+                                        activeVideoURL = url
+                                        videoURL = video.0
+                                        importErrorMessage = nil
+                                        importedVideoDescription = nil
+                                        showPlayer = true
+                                    } else {
+                                        importErrorMessage = "示例视频链接无效。"
+                                    }
                                 }
                             }
                         }
@@ -127,8 +185,46 @@ struct ContentView: View {
         }
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showPlayer) {
-            if let url = URL(string: videoURL) {
+            if let url = activeVideoURL {
                 VideoPlayerView(videoURL: url)
+            }
+        }
+        .onChange(of: selectedVideoItem) { newItem in
+            guard let newItem else { return }
+
+            importErrorMessage = nil
+            importedVideoDescription = nil
+            isImportingVideo = true
+
+            Task {
+                do {
+                    if let data = try await newItem.loadTransferable(type: Data.self) {
+                        let fileExtension = newItem.supportedContentTypes.first?.preferredFilenameExtension ?? "mov"
+                        let tempURL = FileManager.default.temporaryDirectory
+                            .appendingPathComponent("selectedVideo-\(UUID().uuidString).\(fileExtension)")
+                        try data.write(to: tempURL)
+
+                        await MainActor.run {
+                            activeVideoURL = tempURL
+                            videoURL = tempURL.absoluteString
+                            importedVideoDescription = "已导入本地视频，可立即播放"
+                            showPlayer = true
+                        }
+                    } else {
+                        await MainActor.run {
+                            importErrorMessage = "无法读取选中的视频。"
+                        }
+                    }
+                } catch {
+                    await MainActor.run {
+                        importErrorMessage = "导入视频失败：\(error.localizedDescription)"
+                    }
+                }
+
+                await MainActor.run {
+                    isImportingVideo = false
+                    selectedVideoItem = nil
+                }
             }
         }
     }

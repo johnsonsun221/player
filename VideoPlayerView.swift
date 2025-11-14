@@ -280,6 +280,7 @@ class VideoPlayerManager: NSObject, ObservableObject {
     func setupPlayer(with url: URL) {
         let playerItem = AVPlayerItem(url: url)
         player = AVPlayer(playerItem: playerItem)
+        playerViewController?.player = player
 
         // 自动开始播放
         player?.play()
