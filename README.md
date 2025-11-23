@@ -1,256 +1,183 @@
-# 视频播放器 - Liquid Glass 设计语言
+# 决策小助理 - AI Decision Helper
 
-这是一个使用SwiftUI开发的iOS视频播放器应用，采用现代化的**Liquid Glass设计语言**，完整支持Apple的Picture in Picture（画中画）功能。
+一个轻量级 AI 决策助手 Android 应用，帮助用户在生活中做出简单但频繁的选择。
 
-## 🎨 设计特色
+## 功能特点
 
-### Liquid Glass 设计语言
+### 核心功能
 
-本应用采用前沿的Liquid Glass（流动玻璃）设计风格，带来极致的视觉体验：
+1. **问题输入与条件设定**
+   - 输入你正在犹豫的问题
+   - 可选设定：预算、地点、额外限制
 
-- **毛玻璃效果 (Frosted Glass)** - 使用 `.ultraThinMaterial` 创建半透明磨砂质感
-- **动态渐变背景** - 流动的色彩渐变，增强视觉深度
-- **玻璃态组件** - 所有UI元素采用透明叠加和模糊效果
-- **光影效果** - 柔和的阴影和高光边框营造立体感
-- **流畅动画** - 平滑的过渡效果和交互反馈
-- **深色优化** - 专为深色模式设计的配色方案
+2. **AI 产生候选选项**
+   - AI 根据问题和条件生成 3-5 个具体可执行的选项
+   - 支持删除不想要的选项
+   - 支持添加自定义选项
 
-### 视觉元素
+3. **智能决策模式**
+   - 「帮我选一个」- 随机抽选
+   - 「使用我的选择」- 手动确认
+   - 未来支持 AI 加权抽签
 
-- 渐变色彩：紫蓝色调营造科技感
-- 圆角设计：柔和的边角增强亲和力
-- 半透明层：多层次的视觉深度
-- 发光效果：按钮和图标的光晕增强质感
+4. **AI 解释选择理由**
+   - AI 用 2-3 句话解释为什么这个选择适合你
+   - 友善、自然的语气
 
-## ✨ 核心功能
+5. **历史记录**
+   - 本地存储最近的决策记录
+   - 可查看历史详情
+   - 支持删除和清空
 
-1. **视频播放**
-   - 支持HTTP/HTTPS视频流
-   - 支持本地和远程视频文件
-   - 流畅的播放控制界面
-   - 自动隐藏控制栏
+## 技术栈
 
-2. **画中画(PIP)模式**
-   - 一键切换PIP模式
-   - 支持在使用其他应用时继续播放
-   - 自动暂停和恢复
-   - 完整的PIP生命周期管理
-   - PIP状态视觉反馈
+### 前端 (Android)
+- **语言**: Kotlin
+- **UI**: Jetpack Compose + Material 3
+- **架构**: MVVM + Clean Architecture
+- **导航**: Navigation Compose
+- **本地存储**: Room Database
 
-3. **智能控制**
-   - 播放/暂停
-   - 快进15秒
-   - 快退15秒
-   - 点击屏幕显示/隐藏控制栏
-   - 3秒后自动隐藏控制栏
+### 后端服务
+- **AI 服务**: OpenAI GPT-3.5-turbo
+- **网络请求**: Retrofit + OkHttp
+- **JSON 解析**: Gson
 
-## 技术实现
-
-### 关键组件
-
-#### 1. VideoPlayerApp.swift
-应用程序入口点，使用SwiftUI的`@main`属性标记。
-
-#### 2. LiquidGlassComponents.swift ⭐ 新增
-完整的Liquid Glass设计系统组件库：
-
-- **LiquidGradientBackground** - 动态渐变背景（8秒循环动画）
-- **GlassCard** - 毛玻璃卡片容器
-- **GlassButton** - 玻璃态按钮（支持主要/次要样式）
-- **GlassTextField** - 玻璃态文本输入框
-- **GlassListItem** - 带按压反馈的列表项
-- **FloatingGlassButton** - 浮动圆形玻璃按钮
-- **GlassTitle/GlassSubtitle** - 渐变文字样式
-
-所有组件都包含：
-- `.ultraThinMaterial` 毛玻璃效果
-- 渐变边框高光
-- 多层阴影
-- 半透明背景
+### 设计语言
+- Liquid Glass 风格
+- 动态渐变背景
+- 毛玻璃效果
 - 流畅动画
 
-#### 3. ContentView.swift
-采用Liquid Glass风格的主视图界面：
+## 项目结构
+
+```
+app/src/main/java/com/decisionhelper/ai/
+├── DecisionHelperApp.kt          # Application 类
+├── MainActivity.kt               # 主 Activity
+├── data/
+│   ├── model/
+│   │   ├── Decision.kt           # 决策数据模型
+│   │   └── AIResponse.kt         # AI 响应模型
+│   ├── local/
+│   │   ├── DecisionDao.kt        # Room DAO
+│   │   └── DecisionDatabase.kt   # Room Database
+│   └── repository/
+│       └── DecisionRepository.kt # 数据仓库
+├── service/
+│   ├── OpenAIService.kt          # OpenAI API 接口
+│   └── AIDecisionService.kt      # AI 决策服务
+├── ui/
+│   ├── theme/
+│   │   ├── Color.kt              # 颜色定义
+│   │   ├── Theme.kt              # 主题配置
+│   │   └── Type.kt               # 字体样式
+│   ├── components/
+│   │   └── GlassComponents.kt    # 玻璃效果组件库
+│   ├── navigation/
+│   │   └── NavHost.kt            # 导航配置
+│   └── screens/
+│       ├── home/                 # 首页（问题输入）
+│       ├── options/              # 选项列表页
+│       ├── result/               # 结果展示页
+│       └── history/              # 历史记录页
+```
+
+## 设置与运行
+
+### 1. 克隆项目
+```bash
+git clone <repository-url>
+cd player
+```
+
+### 2. 配置 OpenAI API Key
+
+在 `gradle.properties` 文件中添加：
+```properties
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+或者在 Android Studio 中：
+1. 打开 `local.properties` (如果没有则创建)
+2. 添加：`OPENAI_API_KEY=your_api_key`
+
+### 3. 使用 Android Studio 打开项目
+1. 打开 Android Studio
+2. 选择 "Open an existing project"
+3. 选择项目根目录
+4. 等待 Gradle 同步完成
+
+### 4. 运行应用
+1. 连接 Android 设备或启动模拟器
+2. 点击 Run 按钮或按 Shift+F10
+
+## API 设计
+
+### Prompt 设计
+
+#### 生成选项
+```
+使用者目前有一个犹豫的问题，请根据使用者提供的描述与限制，产生 3-5 个具体且可执行的选项。
+请以 JSON 格式回传：
+{ "options": [ { "title": "...", "description": "..." }, ... ] }
+```
+
+#### 解释选择
+```
+使用者已经做出了选择，请用轻松友善的语气，说明为什么这个选择是合理或不错的决定。
+回覆 2-3 句话即可。
+```
+
+## 界面预览
+
+### 首页
 - 动态渐变背景
-- 玻璃态卡片布局
-- 视频URL输入区
-- 精选视频列表
-- 使用指南卡片
-- ScrollView支持长内容
+- 问题输入框
+- 条件设定（预算、地点、限制）
+- 使用指南
 
-#### 4. VideoPlayerView.swift
-采用Liquid Glass风格的播放器：
-- **VideoPlayerManager**: 管理播放器状态和PIP控制
-- **AVPlayer集成**: 使用AVFoundation进行视频播放
-- **PIP控制器**: AVPictureInPictureController的完整实现
-- **智能控制栏**: 自动显示/隐藏（3秒定时器）
-- **玻璃态控制面板**: 顶部工具栏和底部播放控制
-- **流畅过渡动画**: 控制栏的滑入/滑出效果
+### 选项列表
+- 显示 AI 生成的选项
+- 支持选择、删除、添加
+- 「帮我选一个」按钮
 
-### PIP实现细节
+### 结果页
+- 庆祝动画
+- 选中的选项
+- AI 解释理由
+- 原始问题回顾
 
-```swift
-// 1. 设置音频会话以支持后台播放
-try AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
+### 历史记录
+- 时间排序的决策列表
+- 快速查看详情
+- 删除和清空功能
 
-// 2. 创建PIP控制器
-pipController = AVPictureInPictureController(playerLayer: playerLayer)
-pipController?.delegate = self
+## 目标族群
 
-// 3. 启动PIP
-pipController.startPictureInPicture()
-```
+1. **一般上班族 / 学生** - 常常犹豫「吃什么」、「周末做什么」
+2. **选择困难症患者** - 做决定压力大，想把决策外包
+3. **科技爱好者** - 想试试 AI 帮忙做日常小决策
 
-### 必要的配置
+## 用户价值
 
-在 `Info.plist` 中需要添加：
+- **节省思考时间** - 不用自己列选项、逐一分析
+- **减少选择焦虑** - 交给 App 帮你「分析＋抽签」
+- **有陪伴感** - AI 用自然语言说明选择理由，像朋友给建议
 
-```xml
-<!-- 支持后台音频播放 -->
-<key>UIBackgroundModes</key>
-<array>
-    <string>audio</string>
-</array>
+## 未来规划
 
-<!-- 允许HTTP请求（仅用于测试） -->
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSAllowsArbitraryLoads</key>
-    <true/>
-</dict>
-```
-
-## 使用说明
-
-### 基本使用
-
-1. **输入视频URL**
-   - 在主界面输入框中输入视频URL
-   - 点击"播放视频"按钮
-
-2. **选择示例视频**
-   - 点击列表中的任一示例视频
-   - 自动开始播放
-
-3. **启用PIP模式**
-   - 点击右上角的PIP图标
-   - 视频将缩小到浮动窗口
-   - 可以切换到其他应用继续观看
-
-### 播放控制
-
-- **播放/暂停**: 点击中间的播放按钮
-- **快退15秒**: 点击左侧的后退按钮
-- **快进15秒**: 点击右侧的前进按钮
-- **关闭播放器**: 点击左上角的X按钮
+- [ ] AI 加权抽签功能
+- [ ] 更多 AI 模型支持
+- [ ] 分类标签功能
+- [ ] 云端同步
+- [ ] 小组件支持
+- [ ] 深色/浅色主题切换
 
 ## 系统要求
 
-- iOS 14.0 或更高版本
-- Xcode 12.0 或更高版本
-- Swift 5.3 或更高版本
-
-## PIP支持要求
-
-### 设备要求
-- iPhone: iPhone 7 或更新机型
-- iPad: iPad Air 2 或更新机型
-
-### 系统要求
-- iOS 14.0+（PIP在iPhone上的支持）
-- iOS 9.0+（PIP在iPad上的支持）
-
-## 构建和运行
-
-### 使用Xcode
-
-1. 打开Xcode
-2. 选择 File > New > Project
-3. 选择 iOS > App
-4. 将本仓库中的Swift文件添加到项目
-5. 替换Info.plist内容
-6. 选择目标设备或模拟器
-7. 点击Run按钮 (⌘R)
-
-### 配置要点
-
-确保在Xcode项目设置中：
-1. **Signing & Capabilities**
-   - 添加 "Background Modes" capability
-   - 勾选 "Audio, AirPlay, and Picture in Picture"
-
-2. **General**
-   - 设置正确的Bundle Identifier
-   - 选择有效的开发团队
-
-## 代码结构
-
-```
-player/
-├── VideoPlayerApp.swift           # 应用入口
-├── LiquidGlassComponents.swift    # ⭐ Liquid Glass设计组件库
-├── ContentView.swift              # 主视图（Liquid Glass风格）
-├── VideoPlayerView.swift          # 播放器视图（Liquid Glass风格）+ PIP实现
-├── Info.plist                     # 应用配置
-└── README.md                      # 说明文档
-```
-
-### 设计系统架构
-
-```
-LiquidGlassComponents.swift
-├── 颜色系统
-│   ├── liquidPrimary (蓝色)
-│   ├── liquidSecondary (紫色)
-│   ├── liquidAccent (青色)
-│   └── 半透明变体
-├── 背景组件
-│   └── LiquidGradientBackground (动态渐变)
-├── 容器组件
-│   └── GlassCard (毛玻璃卡片)
-├── 交互组件
-│   ├── GlassButton (玻璃按钮)
-│   ├── GlassTextField (玻璃输入框)
-│   ├── GlassListItem (玻璃列表项)
-│   └── FloatingGlassButton (浮动按钮)
-└── 文字组件
-    ├── GlassTitle (大标题)
-    └── GlassSubtitle (副标题)
-```
-
-## 常见问题
-
-### PIP无法启动？
-
-1. 确认设备支持PIP功能
-2. 检查Info.plist中是否添加了UIBackgroundModes
-3. 确认音频会话配置正确
-4. 在真机上测试（部分模拟器可能不支持）
-
-### 视频无法播放？
-
-1. 确认视频URL有效
-2. 检查网络连接
-3. 确认视频格式受支持（推荐MP4）
-4. 检查NSAppTransportSecurity设置（HTTPS vs HTTP）
-
-## 示例视频来源
-
-应用内置的示例视频来自Google的测试视频库，包括：
-- Big Buck Bunny
-- Elephants Dream
-- For Bigger Blazes
-
-## 进阶功能建议
-
-可以考虑添加以下功能：
-1. 播放列表管理
-2. 视频下载功能
-3. 播放速度控制
-4. 字幕支持
-5. 投屏功能（AirPlay）
-6. 播放历史记录
-7. 手势控制（音量、亮度、进度）
+- Android 8.0 (API 26) 或更高版本
+- 网络连接（用于 AI 功能）
 
 ## 许可证
 
@@ -259,9 +186,3 @@ MIT License
 ## 作者
 
 由 Claude Code 创建
-
-## 参考资料
-
-- [AVFoundation Documentation](https://developer.apple.com/documentation/avfoundation)
-- [AVPictureInPictureController](https://developer.apple.com/documentation/avkit/avpictureinpicturecontroller)
-- [Enabling Background Audio](https://developer.apple.com/documentation/avfoundation/media_playback/configuring_your_app_for_media_playback)
